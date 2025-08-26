@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Démo Widget Chat IA</title>
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;margin:0;padding:2rem}
+    .cta-wrap{margin:10px 0;display:flex;gap:8px;flex-wrap:wrap}
+    .cta-note{display:inline-block;background:#fff;border:1px solid #eee;padding:8px 10px;border-radius:12px}
+    .cta-btn{display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:10px 12px;border-radius:12px}
+    .chip{display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;padding:6px 10px;border-radius:999px;cursor:pointer;font-size:12px}
+  </style>
+</head>
+<body>
+  <h1>Démo du Widget Chat IA</h1>
+  <p>Collez ce bloc sur n'importe quel site. Remplacez l'URL Render ci-dessous.</p>
+
+  <!-- === Widget Chat IA === -->
+  <div id="caro-ai-widget"></div>
+  <script>
+  (function(){
+    const CONFIG = {
+      api_base: "https://TON-BACKEND.onrender.com", // ← remplace par ton URL Render
+      client_id: "client@pme.fr", // ← remplace par l'email du client
+      welcome: "Bienvenue 👋 Comment puis-je vous aider ?",
+      booking_url: "https://ton-lien-de-reservation.com" // ← ton lien de prise de RDV
+    };
+
+    const root = document.getElementById("caro-ai-widget");
+    root.style.position="fixed"; root.style.right="20px"; root.style.bottom="20px"; root.style.zIndex="999999";
+    root.innerHTML = `
+      <button id="caro-bubble" aria-label="Ouvrir le chat" style="all:unset;cursor:pointer;background:#111;color:#fff;padding:12px 14px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.25)">💬 Discuter</button>
+      <div id="caro-panel" style="display:none;position:fixed;right:20px;bottom:80px;width:360px;max-height:70vh;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden">
+        <div style="padding:12px 14px;border-bottom:1px solid #eee;font-weight:600;display:flex;justify-content:space-between;align-items:center">
+          <span>Assistant IA</span>
+          <div style="display:flex;gap:6px">
+            <span class="chip" id="chip-rdv">Prendre RDV</span>
+          </div>
+        </div>
+        <div id="caro-chat" style="padding:12px;height:360px;overflow:auto;font-size:14px;line-height:1.45;background:#fafafa">
+          <div style="margin:8px 0;opacity:.8">${CONFIG.welcome}</div>
+        </div>
+        <div style="display:flex;gap:8px;padding:10px;border-top:1px solid #eee;background:#fff">
+          <input id="caro-input" type="text" placeholder="Écrivez votre message..." aria-label="Message" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:10px;outline:none"/>
+          <button id="caro-send" style="padding:10px 12px;border:0;border-radius:10px;background:#111;color:#fff;cursor:pointer">Envoyer</button>
+        </div>
+      </div>`;
+
+    const bubble=document.getElementById("caro-bubble");
+    const panel=document.getElementById("caro-panel");
+    const chat=document.getElementById("caro-chat");
+    const input=document.getElementById("caro-input");
+    const send=document.getElementById("caro-send");
+    const chipRDV=document.getElementById("chip-rdv");
+
+    bubble.onclick=()=>{ panel.style.display=(panel.style.display==="none"?"block":"none"); input.focus(); };
+
+    chipRDV.onclick=()=> {
+      add("user","Je souhaite prendre rendez-vous");
+      showBookingCTA();
+      input.focus();
+    };
+
+    function showBookingCTA(){
+      if (!CONFIG.booking_url) return;
+      if (chat.querySelector('#booking-cta')) return;
+
+      const wrap = document.createElement("div");
+      wrap.className = "cta-wrap";
+
+      const info = document.createElement("div");
+      info.className = "cta-note";
+      info.textContent = "Je peux vous proposer un créneau immédiatement :";
+
+      const btn = document.createElement("a");
+      btn.id = "booking-cta";
+      btn.className = "cta-btn";
+      btn.href = CONFIG.booking_url;
+      btn.target = "_blank";
+      btn.rel = "noopener";
+      btn.textContent = "🗓️ Prendre RDV";
+
+      wrap.appendChild(info);
+      wrap.appendChild(btn);
+      chat.appendChild(wrap);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    send.onclick=async()=>{
+      const text=input.value.trim(); if(!text) return; input.value="";
+      add("user", text);
+      try{
+        const r=await fetch(CONFIG.api_base+"/chat", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({ client_id: CONFIG.client_id, message: text })
+        });
+        const data=await r.json();
+        add("bot", data.reply || "Erreur serveur");
+      }catch(e){ add("bot","Impossible de joindre le serveur."); }
+    };
+
+    input.addEventListener("keydown",(e)=>{ if(e.key==="Enter") send.click(); });
+
+    function add(who,t){ const d=document.createElement("div"); d.style.margin="8px 0"; d.style.textAlign=(who==="user"?"right":"left");
+      d.innerHTML=`<span style="display:inline-block;max-width:85%;padding:8px 10px;border-radius:12px;${who==="user"?"background:#111;color:#fff":"background:#fff;border:1px solid #eee;color:#111"}">${escape(t)}</span>`;
+      chat.appendChild(d); chat.scrollTop=chat.scrollHeight; }
+    function escape(s){return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
+  })();
+  </script>
+</body>
+</html>
