@@ -22,9 +22,9 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 # Tes liens Payment Links (Basic / Pro / Illimité) - déjà fournis
 PAYMENT_LINKS = {
-    "basic":   "https://buy.stripe.com/test_8x27sFaSibRAaFE4sR8so00",
-    "pro":     "https://buy.stripe.com/test_aFa9AN0dE08SfZY6AZ8so01",
-    "illimite":"https://buy.stripe.com/test_aFa6oBbWmg7Q5lkbVj8so02",
+    "basic":   "https://buy.stripe.com/test_cNieV79Oe1cW010cZn8so03",
+    "pro":     "https://buy.stripe.com/test_fZu8wJe4uaNw0103oN8so04",
+    "illimite":"https://buy.stripe.com/test_7sY28lf8yg7Q7ts9Nb8so05",
 }
 
 # ====== USAGE / PLANS ======
